@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import style from './App.module.css';
-// import { v4 as uuidv4 } from 'uuid';
-
 import Searchbar from './searchbar/Searchbar';
 import ImageGallery from './imageGallery/ImageGallery';
 import searchApi from './servises/searchApi';
+import Modal from './modal/Modal';
 
 class App extends Component {
   state = {
@@ -15,31 +14,7 @@ class App extends Component {
     error: null,
     showModal: false,
     imgTags: null,
-  };
-
-  bigImage = ({ largeImageURL, tags }) => {
-    this.setState({ largeImage: largeImageURL, imgTags: tags });
-  };
-
-  searchImages = () => {
-    const { page, query } = this.state;
-    searchApi({ page, query })
-      .then(
-        pictures => {
-          this.setState(prevState => ({
-            pictures: [...prevState.pictures, ...pictures],
-            page: prevState.page + 1,
-          }));
-        },
-
-        // this.setState(prevState => {
-        //   return {
-        //     pictures: [...prevState.pictures, ...data.hits],
-        //     page: prevState.page + 1,
-        //   };
-        // }),
-      )
-      .catch(error => console.log(error));
+    isLoading: false,
   };
 
   componentDidUpdate(_, prevState) {
@@ -54,20 +29,60 @@ class App extends Component {
     }
   }
 
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+    }));
+  };
+
+  bigImage = ({ target }) => {
+    const { lgimg, tag } = target.dataset;
+    this.setState({
+      largeImage: lgimg,
+      imgTags: tag,
+    });
+    this.toggleModal();
+  };
+
+  searchImages = () => {
+    const { page, query } = this.state;
+    this.setState({ isLoading: true });
+    searchApi({ page, query })
+      .then(pictures => {
+        this.setState(prevState => ({
+          pictures: [...prevState.pictures, ...pictures],
+          page: prevState.page + 1,
+        }));
+      })
+      .catch(error => console.log(error))
+      .finally(() => this.setState({ isLoading: false }));
+  };
+
   onSubmit = query => {
     this.setState({ query, page: 1, pictures: [] });
   };
 
   render() {
+    const { showModal, largeImage, imgTags, isLoading } = this.state;
     return (
       <div className={style.mainContainer}>
         <Searchbar onSubmit={this.onSubmit} />
         <ImageGallery pictures={this.state.pictures} bigImage={this.bigImage} />
 
-        {this.state.page !== 1 && (
-          <button className={style.button} onClick={this.searchImages}>
-            Load more
-          </button>
+        {isLoading ? (
+          <h1>Downloading...</h1>
+        ) : (
+          this.state.page !== 1 && (
+            <button className={style.button} onClick={this.searchImages}>
+              Load more
+            </button>
+          )
+        )}
+
+        {showModal && (
+          <Modal showModal={this.toggleModal}>
+            <img src={largeImage} alt={imgTags} />
+          </Modal>
         )}
       </div>
     );

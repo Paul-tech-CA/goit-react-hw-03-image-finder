@@ -1,21 +1,16 @@
 import React from 'react';
 import style from './ImageGalleryItem.module.css';
 
-const ImageGalleryItem = ({
-  id,
-  webformatURL,
-  largeImageURL,
-  tags,
-  bigImage,
-}) => {
+const ImageGalleryItem = ({ webformatURL, largeImageURL, tags, bigImage }) => {
   return (
     <li className={style.imageGalleryItem}>
       <img
-        //   data-id={id}
         src={webformatURL}
         alt={tags}
         className={style.imageGalleryItemImage}
-        onClick={() => bigImage({ largeImageURL })}
+        data-lgimg={largeImageURL}
+        data-tag={tags}
+        onClick={bigImage}
       />
     </li>
   );
