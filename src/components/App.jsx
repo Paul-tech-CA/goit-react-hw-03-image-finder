@@ -10,10 +10,10 @@ class App extends Component {
     pictures: [],
     page: 1,
     query: '',
-    largeImage: null,
-    error: null,
+    largeImage: '',
+    error: '',
     showModal: false,
-    imgTags: null,
+    imgTags: '',
     isLoading: false,
   };
 
